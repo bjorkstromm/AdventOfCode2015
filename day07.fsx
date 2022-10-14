@@ -1,4 +1,5 @@
 open System
+open System.Collections.Generic
 open System.IO
 open System.Text.RegularExpressions
 
@@ -51,24 +52,48 @@ let parseFile file =
     |> File.ReadAllLines
     |> parseLines
 
-let rec eval (signals : Map<Wire, Gate>) (signal: Wire) =
+let rec eval (signals : Map<Wire, Gate>) (signal: Wire) (cache: Dictionary<string, uint16>) =
     printfn "eval: %A" signal
 
     match signal with
     | Val v -> v
-    | _  ->
-        match signals.[signal] with
-        | INPUT signal ->
-            match signal with
-            | Val v -> v
-            | Id id -> eval signals (Id(id))
-        | NOT signal -> ~~~ (eval signals signal)
-        | AND (left ,right) -> (eval signals left) &&& (eval signals right)
-        | OR (left ,right) -> (eval signals left) ||| (eval signals right)
-        | LSHIFT (left ,right) -> (eval signals left) <<< (right |> int)
-        | RSHIFT (left ,right) -> (eval signals left) >>> (right |> int)
+    | Id id when cache.ContainsKey id ->
+        printfn "cache hit: %s" id
+        cache.[id]
+    | Id id ->
+        let v =
+            match signals.[signal] with
+            | INPUT signal ->
+                match signal with
+                | Val v -> v
+                | Id id -> eval signals (Id(id)) cache
+            | NOT signal -> ~~~ (eval signals signal cache)
+            | AND (left ,right) -> (eval signals left cache) &&& (eval signals right cache)
+            | OR (left ,right) -> (eval signals left cache) ||| (eval signals right cache)
+            | LSHIFT (left ,right) -> (eval signals left cache) <<< (right |> int)
+            | RSHIFT (left ,right) -> (eval signals left cache) >>> (right |> int)
+        cache.[id] <- v
+        v
 
 let part1 (file : string) (wire : string) =
     let signals = file |> parseFile
-    let result = eval signals (Id(wire))
+    let cache = Dictionary<string, uint16>()
+    let result = eval signals (Id(wire)) cache
     result
+
+let part2 (file : string) =
+    // Take wire a value
+    let signals = file |> parseFile
+    let cache = Dictionary<string, uint16>()
+    let result = eval signals (Id("a")) cache
+
+    // Override value of wire b
+    let signals =
+        signals
+        |> Map.change (Id("b")) (fun _ -> INPUT(Val(result)) |> Some)
+    let cache = Dictionary<string, uint16>()
+    let result = eval signals (Id("a")) cache
+
+    result
+
+part2 "day07.txt" |> printfn "%A"
