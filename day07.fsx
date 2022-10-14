@@ -53,13 +53,9 @@ let parseFile file =
     |> parseLines
 
 let rec eval (signals : Map<Wire, Gate>) (signal: Wire) (cache: Dictionary<string, uint16>) =
-    printfn "eval: %A" signal
-
     match signal with
     | Val v -> v
-    | Id id when cache.ContainsKey id ->
-        printfn "cache hit: %s" id
-        cache.[id]
+    | Id id when cache.ContainsKey id -> cache.[id]
     | Id id ->
         let v =
             match signals.[signal] with
@@ -95,5 +91,3 @@ let part2 (file : string) =
     let result = eval signals (Id("a")) cache
 
     result
-
-part2 "day07.txt" |> printfn "%A"
