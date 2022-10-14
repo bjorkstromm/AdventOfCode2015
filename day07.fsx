@@ -64,10 +64,10 @@ let rec eval (signals : Map<Wire, Gate>) (signal: Wire) (cache: Dictionary<strin
                 | Val v -> v
                 | Id id -> eval signals (Id(id)) cache
             | NOT signal -> ~~~ (eval signals signal cache)
-            | AND (left ,right) -> (eval signals left cache) &&& (eval signals right cache)
-            | OR (left ,right) -> (eval signals left cache) ||| (eval signals right cache)
-            | LSHIFT (left ,right) -> (eval signals left cache) <<< (right |> int)
-            | RSHIFT (left ,right) -> (eval signals left cache) >>> (right |> int)
+            | AND (left, right) -> (eval signals left cache) &&& (eval signals right cache)
+            | OR (left, right) -> (eval signals left cache) ||| (eval signals right cache)
+            | LSHIFT (left, right) -> (eval signals left cache) <<< (right |> int)
+            | RSHIFT (left, right) -> (eval signals left cache) >>> (right |> int)
         cache.[id] <- v
         v
 
