@@ -90,5 +90,10 @@ let part1 file =
     |> parseDistances
     |> possibleRoutes
     |> List.head
-    
-part1 "test.txt"
+
+let part2 file =
+    file
+    |> parseDistances
+    |> possibleRoutes
+    |> List.rev
+    |> List.head
